@@ -78,7 +78,10 @@ async def send_incident_alert_email(incident, user):
             "name": "Groupe Genetics",
             "email": "diallo30amadoukorka@gmail.com"  # adresse d’envoi
         },
-        "to": [{"email": "diallo30amadoukorka@gmail.com"}],  # destinataire (CEO)
+        "to": [
+            {"email": "diallo30amadoukorka@gmail.com"},
+            {"email": "mohamed.thialaw@groupegenetics.com"}
+        ],  
         "subject": subject,
         "htmlContent": html_content,
     }
