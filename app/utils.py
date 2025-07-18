@@ -130,3 +130,36 @@ async def send_incident_resolved_email(user_email: str, user_name: str, incident
         return resp.json()
     
     
+
+async def send_contact_email(name: str, email: str, subject: str, message: str):
+    url = "https://api.brevo.com/v3/smtp/email"
+    html_content = f"""
+    <div>
+      <h2>📩 Nouveau message de contact</h2>
+      <p><strong>Nom :</strong> {name}</p>
+      <p><strong>Email :</strong> {email}</p>
+      <p><strong>Sujet :</strong> {subject}</p>
+      <p><strong>Message :</strong></p>
+      <p>{message}</p>
+    </div>
+    """
+    data = {
+        "sender": {
+            "name": name,
+            "email": email  
+        },
+        "to": [
+            {"email": "diallo30amadoukorka@gmail.com"},  # CEO
+        ],
+        "subject": f"📩 Message de contact : {subject}",
+        "htmlContent": html_content,
+    }
+    headers = {
+        "api-key": SENDINBLUE_API_KEY,
+        "Content-Type": "application/json"
+    }
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, json=data, headers=headers)
+        resp.raise_for_status()
+        return resp.json()
+

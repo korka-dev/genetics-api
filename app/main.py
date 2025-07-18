@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from rich.console import Console
 
-from app.routers import user, auth, incident
+from app.routers import user, auth, incident, contact
 
 console = Console()
 
@@ -43,6 +43,7 @@ async def root():
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(incident.router)
+app.include_router(contact.router)
 
 
 

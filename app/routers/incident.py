@@ -106,3 +106,11 @@ def update_incident_status(
             asyncio.run(send_incident_resolved_email(user.email, user.name, incident.title))
 
     return incident
+
+@router.get("/all-incidents", response_model=list[IncidentOut])
+def get_all_incidents(
+    db: Session = Depends(get_db),
+    __current_ceo: User = Depends(get_current_ceo_user)  
+):
+    return db.query(Incident).all()
+
