@@ -73,9 +73,18 @@ def decode_token(token: str):
 def get_current_ceo_user(
     current_user: User = Depends(get_current_user)
 ):
-    if current_user.email != "diallo30amadoukorka@gmail.com":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, 
-                            detail="Action réservée au CEO de l'entreprise")
+    ceo_emails = [
+        "diallo30amadoukorka@gmail.com",
+        "support@groupegenetics.com",
+        "mohamed.thialaw@groupegenetics.com"
+    ]
+
+    if current_user.email not in ceo_emails:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Action réservée au CEO de l'entreprise"
+        )
+
     return current_user
 
 

@@ -75,12 +75,12 @@ async def send_incident_alert_email(incident, user):
 
     data = {
         "sender": {
-            "name": "Groupe Genetics",
-            "email": "diallo30amadoukorka@gmail.com"  # adresse d’envoi
+            "name": "Support Groupe Genetics",
+            "email": "diallo30amadoukorka@gmail.com"  
         },
         "to": [
             {"email": "diallo30amadoukorka@gmail.com"},
-            {"email": "mohamed.thialaw@groupegenetics.com"}
+            {"email": "support@groupegenetics.com"}
         ],  
         "subject": subject,
         "htmlContent": html_content,
@@ -149,7 +149,9 @@ async def send_contact_email(name: str, email: str, subject: str, message: str):
             "email": email  
         },
         "to": [
-            {"email": "diallo30amadoukorka@gmail.com"},  # CEO
+            {"email": "diallo30amadoukorka@gmail.com"},
+            {"email": "contact@groupegenetics.com"},
+            {"email": "admin@groupegenetics.com"}
         ],
         "subject": f"📩 Message de contact : {subject}",
         "htmlContent": html_content,
@@ -162,4 +164,3 @@ async def send_contact_email(name: str, email: str, subject: str, message: str):
         resp = await client.post(url, json=data, headers=headers)
         resp.raise_for_status()
         return resp.json()
-
