@@ -1,3 +1,12 @@
+import pandas as pd
+from io import BytesIO
+from datetime import datetime
+import matplotlib.pyplot as plt
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.units import inch
 from passlib.context import CryptContext
 from random import randint
 import os
@@ -164,3 +173,77 @@ async def send_contact_email(name: str, email: str, subject: str, message: str):
         resp = await client.post(url, json=data, headers=headers)
         resp.raise_for_status()
         return resp.json()
+
+
+
+
+def generate_ceo_report(incident_data: list[dict]) -> BytesIO:
+    df = pd.DataFrame(incident_data)
+    df['createdAt'] = pd.to_datetime(df['createdAt'])
+
+    total_incidents = len(df)
+    status_counts = df['status'].value_counts().to_dict()
+    priority_counts = df['priority'].value_counts().to_dict()
+    top_users = df.groupby(['user_name', 'user_email']).size().reset_index(name='incident_count').sort_values(by='incident_count', ascending=False)
+
+    # Graphique circulaire
+    plt.figure(figsize=(4, 4))
+    df['status'].value_counts().plot.pie(autopct='%1.1f%%', startangle=90)
+    plt.title('Répartition des statuts')
+    pie_chart = BytesIO()
+    plt.savefig(pie_chart, format='png')
+    plt.close()
+    pie_chart.seek(0)
+
+    # PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph("Rapport des Incidents - Vue CEO", styles['Title']))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"Date de génération: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"Nombre total d'incidents: {total_incidents}", styles['Normal']))
+    elements.append(Spacer(1, 12))
+
+    # Statuts
+    elements.append(Paragraph("Incidents par statut:", styles['Heading3']))
+    for k, v in status_counts.items():
+        elements.append(Paragraph(f"- {k}: {v}", styles['Normal']))
+    elements.append(Spacer(1, 12))
+
+    # Priorité
+    elements.append(Paragraph("Incidents par priorité:", styles['Heading3']))
+    for k, v in priority_counts.items():
+        elements.append(Paragraph(f"- {k}: {v}", styles['Normal']))
+    elements.append(Spacer(1, 12))
+
+    # Top utilisateurs
+    elements.append(Paragraph("Top utilisateurs :", styles['Heading3']))
+    user_data = [["Nom", "Email", "Nombre d'incidents"]]
+    for _, row in top_users.iterrows():
+        user_data.append([row['user_name'], row['user_email'], row['incident_count']])
+
+    table = Table(user_data, hAlign='LEFT')
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 12))
+
+    # Image
+    elements.append(Paragraph("Graphique: Répartition des statuts", styles['Heading3']))
+    elements.append(Image(pie_chart, width=3.5 * inch, height=3.5 * inch))
+    doc.build(elements)
+
+    buffer.seek(0)
+    return buffer
+
+

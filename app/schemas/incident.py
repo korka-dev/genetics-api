@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from uuid import UUID
 from datetime import datetime
 from enum import Enum
-
+from datetime import date
 
 class Priority(str, Enum):
     FAIBLE = "FAIBLE"
@@ -60,3 +60,6 @@ class IncidentStatusUpdate(BaseModel):
 
     
     
+class DateRange(BaseModel):
+    start_date: date
+    end_date: date
